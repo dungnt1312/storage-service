@@ -135,7 +135,7 @@ func (s *ImageService) UploadImageWithFolder(userID uint, fileHeader *multipart.
 	}
 
 	relativePath := filepath.Join(userFolder, dateFolder, uniqueFilename)
-	fileURL := fmt.Sprintf("%s/%s", strings.TrimSuffix(s.storageURL, "/"), filepath.ToSlash(relativePath))
+	fileURL := fmt.Sprintf("%s/uploads/%s", strings.TrimSuffix(s.storageURL, "/"), filepath.ToSlash(relativePath))
 
 	file := &model.File{
 		UserID:       userID,
@@ -240,7 +240,7 @@ func (s *ImageService) GetImageInfo(fileID uint) (*model.File, map[string]interf
 	}
 
 	relativePath := strings.TrimPrefix(file.FilePath, s.uploadPath+string(filepath.Separator))
-	file.URL = fmt.Sprintf("%s/%s", strings.TrimSuffix(s.storageURL, "/"), filepath.ToSlash(relativePath))
+	file.URL = fmt.Sprintf("%s/uploads/%s", strings.TrimSuffix(s.storageURL, "/"), filepath.ToSlash(relativePath))
 
 	img, err := imaging.Open(file.FilePath)
 	if err != nil {

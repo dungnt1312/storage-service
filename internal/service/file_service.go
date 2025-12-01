@@ -291,7 +291,7 @@ func (s *FileService) GetUserFilesByFolder(userID uint, folderPath string, page,
 
 func (s *FileService) generateFileURL(file *model.File) {
 	relativePath := strings.TrimPrefix(file.FilePath, s.uploadPath+string(filepath.Separator))
-	file.URL = fmt.Sprintf("%s/%s", strings.TrimSuffix(s.storageURL, "/"), filepath.ToSlash(relativePath))
+	file.URL = fmt.Sprintf("%s/uploads/%s", strings.TrimSuffix(s.storageURL, "/"), filepath.ToSlash(relativePath))
 }
 
 func (s *FileService) GetFolders(userID uint) ([]string, error) {

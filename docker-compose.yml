@@ -1,0 +1,17 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: storage-app
+    restart: unless-stopped
+    ports:
+      - "4345:4345"
+    env_file:
+      - .env
+    environment:
+      - GIN_MODE=release
+      - UPLOAD_PATH=/app/uploads
+    volumes:
+      - ./uploads:/app/uploads
+      - ./.env:/app/.env:ro

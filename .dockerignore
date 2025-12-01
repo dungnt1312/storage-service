@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+storage-service
+*.exe
+
+# Node modules (will be installed in container)
+client/node_modules
+client/dist
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env files (use docker-compose environment instead)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Uploads (use volumes)
+uploads/
+
+# Documentation
+*.md
+!README.md
+
+# Test files
+*_test.go
+coverage.out

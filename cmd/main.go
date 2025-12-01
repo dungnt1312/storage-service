@@ -70,6 +70,11 @@ func main() {
 		})
 	})
 
+	// Redirect root to /app
+	router.GET("/", func(c *gin.Context) {
+		c.Redirect(302, "/app")
+	})
+
 	// API routes
 	api := router.Group("/api")
 	{

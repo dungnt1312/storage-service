@@ -74,6 +74,73 @@ func (h *UserHandler) RegenerateAPIKey(c *gin.Context) {
 	})
 }
 
+func (h *UserHandler) GetStats(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	stats, err := h.userService.GetUserStats(userID.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user stats"})
+		return
+	}
+
+	c.JSON(http.StatusOK, stats)
+}
+
+func (h *UserHandler) GetSettings(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	settings, err := h.userService.GetUserSettings(userID.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user settings"})
+		return
+	}
+
+	c.JSON(http.StatusOK, settings)
+}
+
+type UpdateSettingsRequest struct {
+	MaxFiles    int64 `json:"max_files"`
+	MaxFileSize int64 `json:"max_file_size"`
+	MaxStorage  int64 `json:"max_storage"`
+}
+
+func (h *UserHandler) UpdateSettings(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	var req UpdateSettingsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	settings, err := h.userService.UpdateUserSettings(userID.(uint), &service.UserSettings{
+		MaxFiles:    req.MaxFiles,
+		MaxFileSize: req.MaxFileSize,
+		MaxStorage:  req.MaxStorage,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update settings"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "Settings updated successfully",
+		"settings": settings,
+	})
+}
+
 func (h *UserHandler) RegisterRoutes(router *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
 	// Register endpoint is hidden - users should be created through admin panel or database directly
 	// router.POST("/users/register", h.Register)
@@ -83,6 +150,9 @@ func (h *UserHandler) RegisterRoutes(router *gin.RouterGroup, authMiddleware gin
 	protected.Use(authMiddleware)
 	{
 		protected.GET("/users/me", h.GetMe)
+		protected.GET("/users/stats", h.GetStats)
+		protected.GET("/users/settings", h.GetSettings)
+		protected.PUT("/users/settings", h.UpdateSettings)
 		protected.POST("/users/regenerate-key", h.RegenerateAPIKey)
 	}
 }

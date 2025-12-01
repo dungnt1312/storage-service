@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"storage-service/internal/config"
 	"storage-service/internal/handler"
 	"storage-service/internal/middleware"
@@ -30,9 +32,9 @@ func main() {
 	fileRepo := repository.NewFileRepository(db)
 
 	// Initialize services
-	userService := service.NewUserService(userRepo)
-	fileService := service.NewFileService(fileRepo, cfg.UploadPath, cfg.MaxFileSize, cfg.StorageURL)
-	imageService := service.NewImageService(fileRepo, cfg.UploadPath, cfg.MaxFileSize, cfg.StorageURL)
+	userService := service.NewUserService(userRepo, fileRepo)
+	fileService := service.NewFileService(fileRepo, userService, cfg.UploadPath, cfg.StorageURL)
+	imageService := service.NewImageService(fileRepo, userService, cfg.UploadPath, cfg.StorageURL)
 
 	// Initialize middleware
 	authMiddleware := middleware.NewAuthMiddleware(userRepo)
@@ -63,7 +65,7 @@ func main() {
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"status": "ok",
+			"status":  "ok",
 			"message": "File Upload Service is running",
 		})
 	})
@@ -78,6 +80,25 @@ func main() {
 
 	// Serve static files (uploaded files)
 	router.Static("/uploads", cfg.UploadPath)
+
+	// Serve frontend app
+	clientDist := "./client/dist"
+	if _, err := os.Stat(clientDist); err == nil {
+		router.GET("/app", func(c *gin.Context) {
+			c.File(filepath.Join(clientDist, "index.html"))
+		})
+		router.GET("/app/*path", func(c *gin.Context) {
+			path := c.Param("path")
+			filePath := filepath.Join(clientDist, path)
+			// Check if file exists (for assets)
+			if info, err := os.Stat(filePath); err == nil && !info.IsDir() {
+				c.File(filePath)
+			} else {
+				// SPA fallback - serve index.html for all other routes
+				c.File(filepath.Join(clientDist, "index.html"))
+			}
+		})
+	}
 
 	// Start server
 	addr := fmt.Sprintf(":%s", cfg.ServerPort)

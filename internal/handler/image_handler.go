@@ -29,7 +29,9 @@ func (h *ImageHandler) UploadImage(c *gin.Context) {
 		return
 	}
 
-	uploadedFile, err := h.imageService.UploadImage(userID.(uint), file)
+	folderPath := c.PostForm("folder_path")
+
+	uploadedFile, err := h.imageService.UploadImageWithFolder(userID.(uint), file, folderPath)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

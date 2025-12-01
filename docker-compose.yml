@@ -12,5 +12,15 @@ services:
     environment:
       - GIN_MODE=release
       - UPLOAD_PATH=/app/uploads
+      - SERVER_PORT=${SERVER_PORT:-4345}
+      - DB_DRIVER=${DB_DRIVER:-postgres}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - MAX_FILE_SIZE=${MAX_FILE_SIZE:-10485760}
+      - STORAGE_URL=${STORAGE_URL}
+      - FRONTEND_PATH=${FRONTEND_PATH:-./client/dist}
     volumes:
       - ./uploads:/app/uploads

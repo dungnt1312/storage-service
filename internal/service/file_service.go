@@ -32,24 +32,24 @@ var dangerousExtensions = map[string]bool{
 
 // Dangerous MIME types
 var dangerousMimeTypes = map[string]bool{
-	"application/x-msdownload":       true,
-	"application/x-executable":       true,
-	"application/x-msdos-program":    true,
-	"application/x-sh":               true,
-	"application/x-shellscript":      true,
-	"application/x-php":              true,
-	"application/x-httpd-php":        true,
-	"text/x-php":                     true,
-	"application/x-perl":             true,
-	"application/x-python":           true,
-	"application/x-ruby":             true,
-	"application/java-archive":       true,
-	"application/x-java-class":       true,
-	"application/javascript":         true,
-	"text/javascript":                true,
-	"application/x-javascript":       true,
-	"text/vbscript":                  true,
-	"application/x-powershell":       true,
+	"application/x-msdownload":    true,
+	"application/x-executable":    true,
+	"application/x-msdos-program": true,
+	"application/x-sh":            true,
+	"application/x-shellscript":   true,
+	"application/x-php":           true,
+	"application/x-httpd-php":     true,
+	"text/x-php":                  true,
+	"application/x-perl":          true,
+	"application/x-python":        true,
+	"application/x-ruby":          true,
+	"application/java-archive":    true,
+	"application/x-java-class":    true,
+	"application/javascript":      true,
+	"text/javascript":             true,
+	"application/x-javascript":    true,
+	"text/vbscript":               true,
+	"application/x-powershell":    true,
 }
 
 type FileService struct {
@@ -81,9 +81,9 @@ func (s *FileService) ValidateFile(userID uint, fileHeader *multipart.FileHeader
 	}
 
 	// Check filename for path traversal attempts
-	if strings.Contains(fileHeader.Filename, "..") || 
-	   strings.Contains(fileHeader.Filename, "/") || 
-	   strings.Contains(fileHeader.Filename, "\\") {
+	if strings.Contains(fileHeader.Filename, "..") ||
+		strings.Contains(fileHeader.Filename, "/") ||
+		strings.Contains(fileHeader.Filename, "\\") {
 		return errors.New("invalid filename")
 	}
 
@@ -112,10 +112,10 @@ func (s *FileService) ValidateFile(userID uint, fileHeader *multipart.FileHeader
 	// Check for HTML/SVG that might contain scripts
 	if strings.Contains(detectedType, "html") || strings.Contains(detectedType, "svg") {
 		contentStr := strings.ToLower(string(buffer[:n]))
-		if strings.Contains(contentStr, "<script") || 
-		   strings.Contains(contentStr, "javascript:") ||
-		   strings.Contains(contentStr, "onerror=") ||
-		   strings.Contains(contentStr, "onload=") {
+		if strings.Contains(contentStr, "<script") ||
+			strings.Contains(contentStr, "javascript:") ||
+			strings.Contains(contentStr, "onerror=") ||
+			strings.Contains(contentStr, "onload=") {
 			return errors.New("file contains potentially dangerous content")
 		}
 	}
@@ -136,9 +136,12 @@ func (s *FileService) UploadFileWithFolder(userID uint, fileHeader *multipart.Fi
 	folderPath = s.sanitizeFolderPath(folderPath)
 
 	// Generate date-based folder structure: uploads/{user_id}/{YYYY-MM-DD}/
+
 	now := time.Now()
 	dateFolder := now.Format("2006-01-02")
 	userFolder := fmt.Sprintf("%d", userID)
+	// log upload dir
+	fmt.Println("upload dir", s.uploadPath, userFolder, dateFolder)
 	uploadDir := filepath.Join(s.uploadPath, userFolder, dateFolder)
 
 	// Create user/date directory if not exists
@@ -176,7 +179,7 @@ func (s *FileService) UploadFileWithFolder(userID uint, fileHeader *multipart.Fi
 
 	// Generate relative path for URL
 	relativePath := filepath.Join(userFolder, dateFolder, uniqueFilename)
-	fileURL := fmt.Sprintf("%s/%s", strings.TrimSuffix(s.storageURL, "/"), filepath.ToSlash(relativePath))
+	fileURL := fmt.Sprintf("%s/uploads/%s", strings.TrimSuffix(s.storageURL, "/"), filepath.ToSlash(relativePath))
 
 	// Detect MIME type from file header content type or detect it
 	mimeType := fileHeader.Header.Get("Content-Type")
@@ -215,21 +218,21 @@ func (s *FileService) sanitizeFolderPath(path string) string {
 	// Remove leading/trailing slashes and whitespace
 	path = strings.TrimSpace(path)
 	path = strings.Trim(path, "/\\")
-	
+
 	// Remove any path traversal attempts
 	path = strings.ReplaceAll(path, "..", "")
 	path = strings.ReplaceAll(path, "//", "/")
-	
+
 	// Replace backslashes with forward slashes
 	path = strings.ReplaceAll(path, "\\", "/")
-	
+
 	return path
 }
 
 func (s *FileService) sanitizeFilename(name string) string {
 	// Remove path components
 	name = filepath.Base(name)
-	
+
 	// Remove null bytes and other control characters
 	var result strings.Builder
 	for _, r := range name {
@@ -237,7 +240,7 @@ func (s *FileService) sanitizeFilename(name string) string {
 			result.WriteRune(r)
 		}
 	}
-	
+
 	return result.String()
 }
 
@@ -347,7 +350,7 @@ func (s *FileService) RenameFile(fileID, userID uint, newName string) (*model.Fi
 func (s *FileService) RenameFolder(userID uint, oldPath, newName string) error {
 	oldPath = s.sanitizeFolderPath(oldPath)
 	newName = s.sanitizeFilename(newName)
-	
+
 	if oldPath == "" || newName == "" {
 		return errors.New("invalid folder path or name")
 	}
@@ -401,16 +404,16 @@ func (s *FileService) MoveFile(fileID, userID uint, newFolderPath string) (*mode
 
 // Text file editing
 var editableTextTypes = map[string]bool{
-	"text/plain":              true,
-	"text/html":               true,
-	"text/css":                true,
-	"text/csv":                true,
-	"text/xml":                true,
-	"application/json":        true,
-	"application/xml":         true,
-	"text/markdown":           true,
-	"application/x-yaml":      true,
-	"text/yaml":               true,
+	"text/plain":         true,
+	"text/html":          true,
+	"text/css":           true,
+	"text/csv":           true,
+	"text/xml":           true,
+	"application/json":   true,
+	"application/xml":    true,
+	"text/markdown":      true,
+	"application/x-yaml": true,
+	"text/yaml":          true,
 }
 
 func (s *FileService) IsEditable(file *model.File) bool {

@@ -11,7 +11,7 @@ services:
       - .env
     environment:
       - GIN_MODE=release
-      - UPLOAD_PATH=/app/uploads
+      - UPLOAD_PATH=/uploads
       - SERVER_PORT=${SERVER_PORT:-4345}
       - DB_DRIVER=${DB_DRIVER:-postgres}
       - DB_HOST=${DB_HOST}
@@ -23,10 +23,11 @@ services:
       - STORAGE_URL=${STORAGE_URL}
       - FRONTEND_PATH=${FRONTEND_PATH:-./client/dist}
     volumes:
-      - ./uploads:/app/uploads
+      - ./uploads:/uploads
     networks:
-      - baota_net
+      - storage_net # network for connecting to postgres
 
 networks:
-  baota_net:
+  storage_net:
     external: true
+    name: baota_net # production network name

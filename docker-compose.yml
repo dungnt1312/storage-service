@@ -24,3 +24,9 @@ services:
       - FRONTEND_PATH=${FRONTEND_PATH:-./client/dist}
     volumes:
       - ./uploads:/app/uploads
+    networks:
+      - baota_net
+
+networks:
+  baota_net:
+    external: true

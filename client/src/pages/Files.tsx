@@ -8,7 +8,7 @@ import FileEditor from '../components/FileEditor';
 import {
   FileIcon, Image, FileText, Archive, Trash2, Download, ChevronRight, ChevronLeft,
   Loader2, Eye, Upload, CheckSquare, Square, X, Folder, FolderOpen, 
-  ChevronDown, ChevronUp, Edit3, MoreVertical, FileEdit, Link, Copy, ArrowUpDown
+  ChevronDown, ChevronUp, Edit3, MoreVertical, FileEdit, Link, Copy
 } from 'lucide-react';
 
 function formatBytes(bytes: number): string {
@@ -408,7 +408,21 @@ export default function Files() {
       {/* Sidebar - Folder Tree */}
       <div className="w-56 bg-gray-800 border-r border-gray-700 p-3 overflow-auto flex-shrink-0">
         <p className="text-xs text-gray-500 uppercase mb-2 px-2">Folders</p>
-        {folderTree.length > 0 ? (
+        {/* Root folder */}
+        <div
+          className={`flex items-center gap-1.5 py-1 px-2 rounded cursor-pointer text-sm mb-1 ${
+            currentFolder === '' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700'
+          }`}
+          onClick={() => navigateToFolder('')}
+        >
+          {currentFolder === '' ? (
+            <FolderOpen className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+          ) : (
+            <Folder className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+          )}
+          <span>Root</span>
+        </div>
+        {folderTree.length > 0 && (
           <FolderTree
             nodes={folderTree}
             currentPath={currentFolder}
@@ -418,8 +432,6 @@ export default function Files() {
             expandedPaths={expandedPaths}
             toggleExpanded={toggleExpanded}
           />
-        ) : (
-          <p className="text-gray-500 text-sm px-2">No folders yet</p>
         )}
       </div>
 
@@ -460,34 +472,6 @@ export default function Files() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {/* Sort dropdown */}
-            <div className="relative group">
-              <button className="flex items-center gap-1 px-2 py-1.5 text-gray-400 hover:text-white text-sm rounded hover:bg-gray-700">
-                <ArrowUpDown className="w-4 h-4" />
-                <span className="hidden sm:inline">Sort</span>
-              </button>
-              <div className="absolute right-0 top-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1 hidden group-hover:block z-10 min-w-[140px]">
-                {[
-                  { field: 'name' as SortField, label: 'Name' },
-                  { field: 'size' as SortField, label: 'Size' },
-                  { field: 'created_at' as SortField, label: 'Created' },
-                  { field: 'updated_at' as SortField, label: 'Updated' },
-                ].map(({ field, label }) => (
-                  <button
-                    key={field}
-                    onClick={() => handleSort(field)}
-                    className={`flex items-center justify-between w-full px-3 py-1.5 text-sm hover:bg-gray-700 ${
-                      sortBy === field ? 'text-blue-400' : 'text-gray-300'
-                    }`}
-                  >
-                    {label}
-                    {sortBy === field && (
-                      <span className="text-xs">{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
             <button
               onClick={() => setShowUpload(true)}
               className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
@@ -607,9 +591,33 @@ export default function Files() {
                     <thead>
                       <tr className="border-b border-gray-700 text-left">
                         <th className="p-3 w-10"></th>
-                        <th className="p-3 text-gray-400 text-sm font-medium">Name</th>
-                        <th className="p-3 text-gray-400 text-sm font-medium w-24">Size</th>
-                        <th className="p-3 text-gray-400 text-sm font-medium w-40">Modified</th>
+                        <th className="p-3 w-auto">
+                          <button
+                            onClick={() => handleSort('name')}
+                            className={`flex items-center gap-1 text-sm font-medium hover:text-white ${sortBy === 'name' ? 'text-blue-400' : 'text-gray-400'}`}
+                          >
+                            Name
+                            {sortBy === 'name' && (sortOrder === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)}
+                          </button>
+                        </th>
+                        <th className="p-3 w-24">
+                          <button
+                            onClick={() => handleSort('size')}
+                            className={`flex items-center gap-1 text-sm font-medium hover:text-white ${sortBy === 'size' ? 'text-blue-400' : 'text-gray-400'}`}
+                          >
+                            Size
+                            {sortBy === 'size' && (sortOrder === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)}
+                          </button>
+                        </th>
+                        <th className="p-3 w-40">
+                          <button
+                            onClick={() => handleSort('created_at')}
+                            className={`flex items-center gap-1 text-sm font-medium hover:text-white ${sortBy === 'created_at' ? 'text-blue-400' : 'text-gray-400'}`}
+                          >
+                            Modified
+                            {sortBy === 'created_at' && (sortOrder === 'asc' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)}
+                          </button>
+                        </th>
                         <th className="p-3 text-gray-400 text-sm font-medium w-36">Actions</th>
                       </tr>
                     </thead>

@@ -332,6 +332,30 @@ func (s *FileService) RenameFile(fileID, userID uint, newName string) (*model.Fi
 		return nil, errors.New("unauthorized to rename this file")
 	}
 
+	// Extract current extension from original filename
+	currentExt := filepath.Ext(file.OriginalName)
+
+	// Extract extension from new name (if any)
+	newExt := filepath.Ext(newName)
+
+	// Validate extension: cannot change file extension
+	// If both have extensions, they must match
+	if currentExt != "" && newExt != "" && currentExt != newExt {
+		return nil, errors.New("cannot change file extension")
+	}
+
+	// If original file has no extension, newName must also have no extension
+	if currentExt == "" && newExt != "" {
+		return nil, errors.New("cannot add extension to file without extension")
+	}
+
+	// If newName has no extension and current file has extension, append it
+	if currentExt != "" && newExt == "" {
+		// Remove any trailing dots from newName before appending extension
+		newName = strings.TrimRight(newName, ".")
+		newName = newName + currentExt
+	}
+
 	// Sanitize new name
 	newName = s.sanitizeFilename(newName)
 	if newName == "" {

@@ -6,7 +6,7 @@ services:
     container_name: storage-app
     restart: unless-stopped
     ports:
-      - "4345:4345"
+      - "${SERVER_PORT:-4345}:${SERVER_PORT:-4345}"
     env_file:
       - .env
     environment:
@@ -14,4 +14,3 @@ services:
       - UPLOAD_PATH=/app/uploads
     volumes:
       - ./uploads:/app/uploads
-      - ./.env:/app/.env:ro
